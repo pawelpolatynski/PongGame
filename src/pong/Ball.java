@@ -10,6 +10,7 @@ public class Ball {
     public Random random;
     public Pong pong;
     public int ballSpeed = 8;
+    public int numberOfHits = 0;
 
     public Ball(Pong pong) {
         this.random = new Random();
@@ -31,8 +32,13 @@ public class Ball {
     }
     public void update(Paddle paddle1, Paddle paddle2) {
 
-        this.x = this.x + motionX * ballSpeed;
-        this.y = this.y + motionY * ballSpeed;
+        if (numberOfHits == 0) {
+            this.x = this.x + motionX * (ballSpeed / 2);
+            this.y = this.y + motionY * (ballSpeed / 2);
+        } else {
+            this.x = this.x + motionX * ballSpeed;
+            this.y = this.y + motionY * ballSpeed;
+        }
 
         if (checkCollision(paddle1) == 1) {
             this.motionX = 1;
@@ -45,34 +51,11 @@ public class Ball {
         if (checkCollision(paddle1) == 2) {
             this.spawnBall();
             paddle2.score++;
-            if (paddle2.score > 9) {
-                restart(paddle1,paddle2,this);
-            }
-            try
-            {
-                Thread.sleep(1000);
-            }
-            catch(InterruptedException ex)
-            {
-                Thread.currentThread().interrupt();
-            }
         }
 
         if (checkCollision(paddle2) == 2) {
             this.spawnBall();
             paddle1.score++;
-            if (paddle1.score > 9) {
-                restart(paddle1,paddle2,this);
-            }
-
-            try
-            {
-                Thread.sleep(1000);
-            }
-            catch(InterruptedException ex)
-            {
-                Thread.currentThread().interrupt();
-            }
         }
 
         if (this.y <= 0 || this.y + this.height > pong.height) {
@@ -89,10 +72,12 @@ public class Ball {
     public int checkCollision(Paddle paddle) {
         if (this.x < paddle.x + paddle.width && this.x + width > paddle.x && this.y < paddle.y + paddle.height && this.y + height > paddle.y)
         {
+            this.numberOfHits = 1;
             return 1; //bounce
         }
         else if ((paddle.x > x && paddle.paddleNumber == 1) || (paddle.x < x - width && paddle.paddleNumber == 2))
         {
+            this.numberOfHits = 0;
             return 2; //score
         }
 
