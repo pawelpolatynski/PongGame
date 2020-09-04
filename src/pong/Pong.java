@@ -25,7 +25,7 @@ public class Pong implements ActionListener, KeyListener {
     public Pong() {
         Timer timer = new Timer(20, this);
         JFrame jframe = new JFrame("Pong");
-        gameState = 0;
+        gameState = 0; // Game is paused. Allows user to choose game mode.
 
         renderer = new Renderer();
 
@@ -39,12 +39,14 @@ public class Pong implements ActionListener, KeyListener {
         timer.start();
     }
 
+    // Method creating required objects of other classes.
     public void start() {
         player1 = new Paddle(this, 1);
         player2 = new Paddle(this, 2);
         ball = new Ball(this);
     }
 
+    // Method rendering graphics
     public void render(Graphics2D g) {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
@@ -69,10 +71,10 @@ public class Pong implements ActionListener, KeyListener {
             renderStartScreen(g);
         }
 
-        if(player1.score == 3) {
+        if(player1.score == 10) {
             gameState = 3;
             renderVictoryScreen(player1, g);
-        } else if (player2.score == 3) {
+        } else if (player2.score == 10) {
             gameState = 3;
             renderVictoryScreen(player2, g);
         }
@@ -80,36 +82,40 @@ public class Pong implements ActionListener, KeyListener {
     }
 
 
-
+    // Method "update()" updates position of ball and paddles.
     public void update() {
 
-        if (gameState == 1) {
+        if (gameState == 1) { // If game started and isn't paused...
             if (w) {
-                player1.move(true);
+                player1.move(true); // Moves left paddle up
             }
             if (s) {
-                player1.move(false);
+                player1.move(false); // Moves left paddle down
             }
             if (up) {
-                player2.move(true);
+                player2.move(true); // Moves right paddle up
             }
             if (down) {
-                player2.move(false);
+                player2.move(false); // Moves right paddle down
             }
+            /* If "Player VS Computer" mode is selected
+               AND ball is on the half of the field controlled by the bot
+               AND the ball is heading towards the bots paddle.. */
             if(bot && ball.x > this.width / 2 && ball.motionX > 0) {
                 if (ball.y > player2.y + player2.height / 2) {
-                    player2.move(false);
+                    player2.move(false); // If ball is beneath the bots paddle, moves the paddle down.
                 }
 
                 if (ball.y < player2.y + player2.height / 2) {
-                    player2.move(true);
+                    player2.move(true); // If ball is above the bots paddle, moves the paddle down.
                 }
             }
-            ball.update(player1, player2);
+            ball.update(player1, player2); // Moves the ball and checks collisions.
         }
 
     }
 
+    // Method rendering game's starting screen.
     public void renderStartScreen(Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 70));
@@ -130,6 +136,7 @@ public class Pong implements ActionListener, KeyListener {
         }
     }
 
+    // Method rendering game's pause screen.
     public void renderPauseMenu(Graphics g) {
         g.setColor(Color.RED);
         g.setFont(new Font("Arial", Font.BOLD, 40));
@@ -138,6 +145,8 @@ public class Pong implements ActionListener, KeyListener {
         g. drawString("Press Space to resume the game", width / 8 - 50, height / 2 + 30);
     }
 
+    /* Method rendering game's victory screen.
+       It's showed after one of the players collects enough points and informs users which one won. */
     private void renderVictoryScreen(Paddle player, Graphics2D g) {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
@@ -182,6 +191,7 @@ public class Pong implements ActionListener, KeyListener {
             s = true;
         }
 
+        // Right paddle's controls are enabled only when "Player VS Player" game mode is selected.
         if (id == KeyEvent.VK_UP && !bot) {
             up = true;
         }
@@ -189,12 +199,16 @@ public class Pong implements ActionListener, KeyListener {
         if (id == KeyEvent.VK_DOWN && !bot) {
             down = true;
         }
+        // Space allows user to change game's state.
         if (id == KeyEvent.VK_SPACE) {
             switch (gameState){
+                // When game hasn't already started or is paused, space starts or resumes the game.
                 case 0:
                 case 2:
                     gameState = 1; break;
+                // When game is on, space pauses it.
                 case 1: gameState = 2; break;
+                // When game has ended, space bar allows users to return to the title screen.
                 case 3: gameState = 0;
                         Ball.restart(this.player1, this.player2, this.ball);
                         break;
@@ -202,6 +216,7 @@ public class Pong implements ActionListener, KeyListener {
             }
         }
 
+        // Button R allows users to reset paused game.
         if (id == KeyEvent.VK_R) {
             if (gameState == 2) {
                 Ball.restart(this.player1, this.player2, this.ball);
@@ -209,6 +224,7 @@ public class Pong implements ActionListener, KeyListener {
             }
         }
 
+        // Left and right arrows allow users to change game mode in the title screen.
         if (id == KeyEvent.VK_RIGHT) {
             if (gameState == 0 && !bot) {
                 bot = TRUE;
